@@ -1,0 +1,760 @@
+<title>시상대 룰렛</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f7;
+    --surface:#ffffff;
+    --surface-2:#f8f5ec;
+    --ink:#1c2541;
+    --ink-soft:#5a6180;
+    --ink-faint:#8890ab;
+    --border:#dbe0ec;
+    --border-strong:#c3cade;
+    --gold:#e0a324;
+    --gold-ink:#7a5205;
+    --coral:#ef6a5a;
+    --teal:#2f9e8f;
+    --sky:#3a7ca5;
+    --plum:#8956a3;
+    --good:#2f9e5c;
+    --rose:#d94f70;
+    --indigo:#4f6fd9;
+    --shadow: 0 18px 40px -18px rgba(28,37,65,.35);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1526;
+      --surface:#161d33;
+      --surface-2:#1b2340;
+      --ink:#f0f2fa;
+      --ink-soft:#b7bcd6;
+      --ink-faint:#8790ae;
+      --border:#2a3356;
+      --border-strong:#394270;
+      --gold:#f0b93e;
+      --gold-ink:#3a2600;
+      --coral:#ff8171;
+      --teal:#4fc2b0;
+      --sky:#5ba0cf;
+      --plum:#b07ecb;
+      --good:#4bc27f;
+      --rose:#ef7590;
+      --indigo:#7f9af2;
+      --shadow: 0 18px 44px -16px rgba(0,0,0,.55);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1526;
+    --surface:#161d33;
+    --surface-2:#1b2340;
+    --ink:#f0f2fa;
+    --ink-soft:#b7bcd6;
+    --ink-faint:#8790ae;
+    --border:#2a3356;
+    --border-strong:#394270;
+    --gold:#f0b93e;
+    --gold-ink:#3a2600;
+    --coral:#ff8171;
+    --teal:#4fc2b0;
+    --sky:#5ba0cf;
+    --plum:#b07ecb;
+    --good:#4bc27f;
+    --rose:#ef7590;
+    --indigo:#7f9af2;
+    --shadow: 0 18px 44px -16px rgba(0,0,0,.55);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans KR", "Malgun Gothic", sans-serif;
+    padding-inline:20px;
+    padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{font-family:"Jua","Noto Sans KR",sans-serif; text-wrap:balance;}
+
+  .wrap{max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:22px;}
+
+  header{display:flex; flex-direction:column; gap:4px; align-items:center; text-align:center; margin-bottom:4px;}
+  header .eyebrow{
+    font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-ink);
+    background:color-mix(in srgb, var(--gold) 22%, transparent);
+    border:1px solid color-mix(in srgb, var(--gold) 45%, transparent);
+    padding:4px 12px; border-radius:99px; font-weight:600;
+  }
+  :root[data-theme="dark"] header .eyebrow, @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) header .eyebrow{color:#2a1c00;} }
+  header h1{font-size:clamp(1.7rem,4vw,2.5rem); margin:6px 0 2px; letter-spacing:.01em;}
+  header p{color:var(--ink-soft); margin:0; font-size:.98rem;}
+
+  .layout{
+    display:grid;
+    grid-template-columns: minmax(280px, 380px) 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 820px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+    box-shadow:var(--shadow);
+  }
+  .card h2{
+    font-size:1.05rem; margin:0 0 4px; display:flex; align-items:center; gap:8px;
+  }
+  .card .hint{color:var(--ink-faint); font-size:.82rem; margin:0 0 14px; line-height:1.5;}
+
+  label{display:block; font-size:.85rem; font-weight:600; color:var(--ink-soft); margin-bottom:6px;}
+
+  textarea{
+    width:100%; min-height:150px; resize:vertical;
+    background:var(--surface-2); color:var(--ink);
+    border:1.5px solid var(--border-strong); border-radius:12px;
+    padding:12px 14px; font:inherit; font-size:.95rem; line-height:1.6;
+  }
+  textarea:focus-visible, button:focus-visible, input:focus-visible{
+    outline:3px solid color-mix(in srgb, var(--sky) 55%, transparent); outline-offset:2px;
+  }
+
+  .row{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;}
+
+  button{
+    font:inherit; font-weight:700; border-radius:11px; border:1.5px solid transparent;
+    padding:10px 16px; cursor:pointer; transition:transform .12s ease, filter .12s ease, opacity .12s ease;
+  }
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.5; cursor:not-allowed;}
+  .btn-primary{background:var(--ink); color:var(--surface);}
+  :root[data-theme="dark"] .btn-primary,
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .btn-primary{background:var(--gold); color:var(--gold-ink);} }
+  .btn-primary:hover:not(:disabled){filter:brightness(1.12);}
+  .btn-ghost{background:transparent; color:var(--ink-soft); border-color:var(--border-strong);}
+  .btn-ghost:hover:not(:disabled){background:var(--surface-2);}
+
+  .field{margin-top:16px;}
+  .stepper{display:flex; align-items:center; gap:10px;}
+  .stepper button{width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:var(--surface-2); color:var(--ink); border-color:var(--border-strong);}
+  .stepper input{
+    width:64px; text-align:center; font:inherit; font-weight:800; font-size:1.15rem;
+    background:var(--surface-2); color:var(--ink); border:1.5px solid var(--border-strong); border-radius:10px; padding:6px 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stepper span{color:var(--ink-soft); font-size:.9rem;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .chip{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--surface-2); border:1px solid var(--border);
+    padding:6px 6px 6px 12px; border-radius:99px; font-size:.86rem; font-weight:600; color:var(--ink);
+  }
+  .chip button{
+    all:unset; cursor:pointer; width:18px; height:18px; border-radius:99px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-faint); font-size:.8rem;
+    line-height:1;
+  }
+  .chip button:hover{background:color-mix(in srgb, var(--coral) 25%, transparent); color:var(--coral);}
+  .chip.out{opacity:.45; text-decoration:line-through;}
+  .count-line{font-size:.82rem; color:var(--ink-faint); margin-top:10px;}
+  .count-line b{color:var(--ink); font-variant-numeric: tabular-nums;}
+
+  /* ---- Stage ---- */
+  .stage{
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    background:
+      radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 60%),
+      var(--surface);
+    border:1px solid var(--border); border-radius:20px; padding:26px 20px 28px;
+    box-shadow:var(--shadow);
+  }
+  .status{
+    font-size:1rem; font-weight:700; color:var(--ink-soft);
+    background:var(--surface-2); border:1px solid var(--border);
+    padding:7px 16px; border-radius:99px;
+  }
+  .status .rank{color:var(--coral);}
+
+  .wheel-area{
+    position:relative; width:min(420px, 84vw); aspect-ratio:1/1;
+  }
+  .pointer{
+    position:absolute; left:50%; top:-4px; transform:translateX(-50%);
+    width:0; height:0; z-index:3;
+    border-left:16px solid transparent; border-right:16px solid transparent;
+    border-top:26px solid var(--coral);
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));
+  }
+  .wheel-ring{
+    position:absolute; inset:0; border-radius:50%;
+    background: conic-gradient(from 0deg, var(--gold), var(--coral), var(--gold));
+    padding:9px;
+    box-shadow:0 0 0 1px var(--border-strong), 0 20px 34px -14px rgba(0,0,0,.4);
+  }
+  .wheel-inner{position:relative; width:100%; height:100%; border-radius:50%; overflow:hidden; background:var(--surface-2);}
+  canvas#wheel{
+    width:100%; height:100%; display:block; border-radius:50%;
+    transform:rotate(0deg);
+    transition: transform 4.6s cubic-bezier(.14,.78,.13,1);
+    will-change:transform;
+  }
+  .hub{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:64px; height:64px; border-radius:50%; z-index:2;
+    background:var(--surface);
+    border:4px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; box-shadow:0 6px 14px rgba(0,0,0,.25);
+  }
+  .empty-wheel{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:20px; color:var(--ink-faint); font-size:.92rem; font-weight:600;
+  }
+
+  .spin-btn{
+    font-family:"Jua","Noto Sans KR",sans-serif; font-size:1.3rem; letter-spacing:.02em;
+    padding:14px 46px; border-radius:99px;
+    background:linear-gradient(180deg, var(--coral), color-mix(in srgb, var(--coral) 70%, black));
+    color:#fff; box-shadow:0 12px 24px -10px color-mix(in srgb, var(--coral) 70%, transparent);
+  }
+  .spin-btn:hover:not(:disabled){filter:brightness(1.06);}
+  .spin-btn:disabled{filter:grayscale(.3);}
+
+  .stage-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+
+  /* ---- Podium / results ---- */
+  .results{
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .results h2{margin:0 0 14px;}
+  .podium-grid{
+    display:flex; flex-wrap:wrap; gap:12px;
+  }
+  .slot{
+    flex:1 1 160px; min-width:150px;
+    background:var(--surface-2); border:1.5px dashed var(--border-strong); border-radius:14px;
+    padding:16px 14px; display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
+    min-height:108px; justify-content:center;
+  }
+  .slot.filled{
+    border-style:solid; border-color:var(--gold);
+    background:linear-gradient(180deg, color-mix(in srgb, var(--gold) 16%, var(--surface)), var(--surface));
+    animation:pop .5s cubic-bezier(.2,1.4,.4,1);
+  }
+  .slot.filled.r1{border-color:var(--gold); background:linear-gradient(180deg, color-mix(in srgb, var(--gold) 26%, var(--surface)), var(--surface));}
+  .slot.filled.r2{border-color:var(--sky);}
+  .slot.filled.r3{border-color:var(--coral);}
+  @keyframes pop{ from{transform:scale(.82); opacity:0;} to{transform:scale(1); opacity:1;} }
+  @media (prefers-reduced-motion: reduce){ .slot.filled{animation:none;} }
+  .slot .medal{font-size:1.6rem; line-height:1;}
+  .slot .rank-label{font-size:.78rem; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.06em;}
+  .slot .name{font-family:"Jua","Noto Sans KR",sans-serif; font-size:1.1rem; color:var(--ink); word-break:keep-all;}
+  .slot .name.pending{color:var(--ink-faint); font-family:inherit; font-size:.9rem; font-weight:600;}
+
+  footer{text-align:center; color:var(--ink-faint); font-size:.78rem; margin-top:6px;}
+
+  @media (prefers-reduced-motion: reduce){
+    canvas#wheel{transition-duration:.4s;}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">CLASSROOM DRAW</span>
+    <h1 class="display">🏆 시상대 룰렛</h1>
+    <p>명단을 입력하고 몇 등까지 뽑을지 정한 뒤, 돌려서 순서대로 발표해요.</p>
+  </header>
+
+  <div class="layout">
+    <!-- Left: setup -->
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <section class="card">
+        <h2>👩‍🏫 참가자 명단</h2>
+        <p class="hint">한 줄에 한 명씩, <b>Enter</b>로 구분해서 입력하세요.</p>
+        <label for="names">이름 입력</label>
+        <textarea id="names" spellcheck="false"></textarea>
+        <div class="row">
+          <button class="btn-primary" id="registerBtn" type="button">명단 등록</button>
+          <button class="btn-ghost" id="clearBtn" type="button">전체 지우기</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <p class="count-line">등록 인원 <b id="totalCount">0</b>명 · 남은 인원 <b id="remainCount">0</b>명</p>
+      </section>
+
+      <section class="card">
+        <h2>🥇 등수 설정</h2>
+        <p class="hint">몇 등까지 뽑을지 정하세요. 발표는 꼴찌 등수부터 1등 순서로 진행돼요.</p>
+        <div class="field">
+          <label for="rankInput">뽑을 등수</label>
+          <div class="stepper">
+            <button type="button" id="rankMinus" aria-label="등수 줄이기">−</button>
+            <input type="number" id="rankInput" min="1" value="3" inputmode="numeric">
+            <button type="button" id="rankPlus" aria-label="등수 늘리기">+</button>
+            <span>등까지</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right: wheel stage -->
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <section class="stage">
+        <div class="status" id="status">명단을 등록하면 룰렛이 준비돼요</div>
+        <div class="wheel-area">
+          <div class="pointer"></div>
+          <div class="wheel-ring">
+            <div class="wheel-inner">
+              <canvas id="wheel" width="640" height="640"></canvas>
+              <div class="empty-wheel" id="emptyMsg">참가자를 등록하면<br>룰렛이 채워져요</div>
+            </div>
+          </div>
+          <div class="hub">🎯</div>
+        </div>
+        <button class="spin-btn" id="spinBtn" type="button" disabled>돌리기</button>
+        <div class="stage-actions">
+          <button class="btn-ghost" id="resetRoundBtn" type="button">추첨 다시 하기</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="results">
+    <h2 class="display">🎉 결과 발표</h2>
+    <div class="podium-grid" id="podium"></div>
+  </section>
+
+  <footer>순서대로 이름을 클릭해 빼거나, 명단을 고쳐 다시 등록할 수 있어요.</footer>
+</div>
+
+<canvas id="confetti" style="position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:50;"></canvas>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- palette for wheel slices ----
+  var PALETTE = ["--gold","--coral","--teal","--plum","--sky","--good","--rose","--indigo"];
+  function paletteColor(i){
+    var v = getComputedStyle(document.documentElement).getPropertyValue(PALETTE[i % PALETTE.length]).trim();
+    return v || "#888";
+  }
+
+  // ---- state ----
+  var state = {
+    all: [],        // full registered list
+    remaining: [],  // still in the wheel
+    totalRanks: 3,
+    results: {},    // rank -> name
+    currentRank: 0, // next rank to draw (counts down)
+    spinning: false,
+    rotation: 0
+  };
+
+  // ---- elements ----
+  var namesEl = document.getElementById("names");
+  var registerBtn = document.getElementById("registerBtn");
+  var clearBtn = document.getElementById("clearBtn");
+  var chipsEl = document.getElementById("chips");
+  var totalCountEl = document.getElementById("totalCount");
+  var remainCountEl = document.getElementById("remainCount");
+  var rankInput = document.getElementById("rankInput");
+  var rankMinus = document.getElementById("rankMinus");
+  var rankPlus = document.getElementById("rankPlus");
+  var statusEl = document.getElementById("status");
+  var spinBtn = document.getElementById("spinBtn");
+  var resetRoundBtn = document.getElementById("resetRoundBtn");
+  var podiumEl = document.getElementById("podium");
+  var emptyMsg = document.getElementById("emptyMsg");
+  var wheelCanvas = document.getElementById("wheel");
+  var wctx = wheelCanvas.getContext("2d");
+
+  // ---- sample data so the page opens already working ----
+  var SAMPLE = ["김민준","이서연","박도윤","최지우","정하윤","강주원","윤서아","임도현"];
+  namesEl.value = SAMPLE.join("\n");
+
+  // ===== helpers =====
+  function parseNames(text){
+    return text.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function render(){
+    // chips
+    chipsEl.innerHTML = "";
+    state.all.forEach(function(name){
+      var out = state.remaining.indexOf(name) === -1;
+      var chip = document.createElement("span");
+      chip.className = "chip" + (out ? " out" : "");
+      var label = document.createElement("span");
+      label.textContent = name;
+      chip.appendChild(label);
+      if (!out) {
+        var rm = document.createElement("button");
+        rm.type = "button";
+        rm.setAttribute("aria-label", name + " 명단에서 빼기");
+        rm.textContent = "✕";
+        rm.addEventListener("click", function(){ removeParticipant(name); });
+        chip.appendChild(rm);
+      }
+      chipsEl.appendChild(chip);
+    });
+    totalCountEl.textContent = state.all.length;
+    remainCountEl.textContent = state.remaining.length;
+    emptyMsg.style.display = state.remaining.length ? "none" : "flex";
+
+    spinBtn.disabled = state.spinning || state.remaining.length === 0 || state.currentRank < 1;
+    rankInput.max = Math.max(1, state.all.length);
+
+    updateStatus();
+  }
+
+  function updateStatus(){
+    if (state.all.length === 0){
+      statusEl.innerHTML = "명단을 등록하면 룰렛이 준비돼요";
+    } else if (state.currentRank < 1){
+      statusEl.innerHTML = "🎊 추첨 완료! 결과를 확인하세요";
+    } else if (state.spinning){
+      statusEl.innerHTML = '<span class="rank">' + state.currentRank + "등</span> 추첨 중...";
+    } else {
+      statusEl.innerHTML = '지금 <span class="rank">' + state.currentRank + "등</span>을 뽑습니다";
+    }
+  }
+
+  function removeParticipant(name){
+    if (state.spinning) return;
+    state.all = state.all.filter(function(n){ return n !== name; });
+    state.remaining = state.remaining.filter(function(n){ return n !== name; });
+    namesEl.value = state.all.join("\n");
+    clampRankInput();
+    drawWheel();
+    render();
+  }
+
+  function clampRankInput(){
+    var max = Math.max(1, state.all.length);
+    var v = parseInt(rankInput.value, 10);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > max) v = max;
+    rankInput.value = v;
+  }
+
+  // ===== registering list =====
+  function registerList(){
+    var names = parseNames(namesEl.value);
+    state.all = names;
+    state.remaining = names.slice();
+    clampRankInput();
+    state.totalRanks = parseInt(rankInput.value, 10) || 1;
+    state.currentRank = state.totalRanks;
+    state.results = {};
+    buildPodium();
+    drawWheel();
+    render();
+  }
+
+  function clearAll(){
+    namesEl.value = "";
+    state.all = [];
+    state.remaining = [];
+    state.results = {};
+    state.totalRanks = parseInt(rankInput.value,10) || 1;
+    state.currentRank = 0;
+    buildPodium();
+    drawWheel();
+    render();
+  }
+
+  // ===== podium =====
+  function medalFor(rank){
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return "🎖️";
+  }
+  function buildPodium(){
+    podiumEl.innerHTML = "";
+    var n = state.totalRanks;
+    for (var r = 1; r <= n; r++){
+      var slot = document.createElement("div");
+      slot.className = "slot";
+      slot.id = "slot-" + r;
+      slot.innerHTML =
+        '<div class="medal">' + medalFor(r) + '</div>' +
+        '<div class="rank-label">' + r + '등</div>' +
+        '<div class="name pending">추첨 대기</div>';
+      podiumEl.appendChild(slot);
+    }
+  }
+  function fillPodium(rank, name){
+    var slot = document.getElementById("slot-" + rank);
+    if (!slot) return;
+    slot.classList.add("filled");
+    if (rank === 1) slot.classList.add("r1");
+    if (rank === 2) slot.classList.add("r2");
+    if (rank === 3) slot.classList.add("r3");
+    var nameEl = slot.querySelector(".name");
+    nameEl.textContent = name;
+    nameEl.classList.remove("pending");
+  }
+
+  // ===== wheel drawing =====
+  function drawWheel(){
+    var w = wheelCanvas.width, h = wheelCanvas.height;
+    var cx = w/2, cy = h/2, radius = w/2 - 6;
+    wctx.clearRect(0,0,w,h);
+    var list = state.remaining;
+    var n = list.length;
+    if (n === 0) return;
+
+    var slice = (Math.PI*2) / n;
+    var start = -Math.PI/2; // north
+
+    var fontSize = n <= 6 ? 30 : n <= 10 ? 25 : n <= 16 ? 20 : 15;
+
+    for (var i = 0; i < n; i++){
+      var a0 = start + i*slice;
+      var a1 = start + (i+1)*slice;
+      wctx.beginPath();
+      wctx.moveTo(cx, cy);
+      wctx.arc(cx, cy, radius, a0, a1);
+      wctx.closePath();
+      wctx.fillStyle = paletteColor(i);
+      wctx.fill();
+
+      // divider
+      wctx.strokeStyle = "rgba(255,255,255,.55)";
+      wctx.lineWidth = 3;
+      wctx.stroke();
+
+      // label
+      wctx.save();
+      wctx.translate(cx, cy);
+      wctx.rotate(a0 + slice/2);
+      wctx.textAlign = "right";
+      wctx.textBaseline = "middle";
+      wctx.fillStyle = "#fff";
+      wctx.font = "700 " + fontSize + "px 'Noto Sans KR', sans-serif";
+      var maxW = radius - 46;
+      var label = list[i];
+      while (wctx.measureText(label).width > maxW && label.length > 1){
+        label = label.slice(0, -1);
+      }
+      if (label !== list[i]) label = label.slice(0, -1) + "…";
+      wctx.fillText(label, radius - 22, 0);
+      wctx.restore();
+    }
+  }
+
+  // ===== spin logic =====
+  function spin(){
+    if (state.spinning) return;
+    if (state.remaining.length === 0 || state.currentRank < 1) return;
+
+    state.spinning = true;
+    render();
+
+    var n = state.remaining.length;
+    var winnerIndex = Math.floor(Math.random() * n);
+    var slice = 360 / n;
+    var centerAngle = winnerIndex*slice + slice/2; // degrees from north, clockwise
+    var jitter = (Math.random() - 0.5) * (slice*0.6);
+    var targetMod = ((360 - (centerAngle + jitter)) % 360 + 360) % 360;
+
+    var currentMod = ((state.rotation % 360) + 360) % 360;
+    var extraSpins = reduceMotion ? 2 : (6 + Math.floor(Math.random()*3));
+    var delta = targetMod - currentMod;
+    if (delta <= 0) delta += 360;
+    var newRotation = state.rotation + delta + extraSpins*360;
+
+    state.rotation = newRotation;
+    wheelCanvas.style.transitionDuration = reduceMotion ? ".5s" : (4.4 + Math.random()*0.8) + "s";
+    wheelCanvas.style.transform = "rotate(" + newRotation + "deg)";
+
+    function onDone(){
+      wheelCanvas.removeEventListener("transitionend", onDone);
+      var winner = state.remaining[winnerIndex];
+      state.remaining.splice(winnerIndex, 1);
+      state.results[state.currentRank] = winner;
+      fillPodium(state.currentRank, winner);
+      confettiBurst(state.currentRank === 1);
+      state.currentRank -= 1;
+      state.spinning = false;
+      drawWheel();
+      render();
+    }
+    wheelCanvas.addEventListener("transitionend", onDone);
+  }
+
+  function resetRound(){
+    if (state.spinning) return;
+    state.remaining = state.all.slice();
+    state.results = {};
+    state.currentRank = state.totalRanks;
+    buildPodium();
+    drawWheel();
+    render();
+  }
+
+  // ===== confetti =====
+  var cvs = document.getElementById("confetti");
+  var cctx = cvs.getContext("2d");
+  var particles = [];
+  var confettiRunning = false;
+  function resizeConfetti(){
+    cvs.width = window.innerWidth * devicePixelRatio;
+    cvs.height = window.innerHeight * devicePixelRatio;
+    cvs.style.width = window.innerWidth + "px";
+    cvs.style.height = window.innerHeight + "px";
+    cctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener("resize", resizeConfetti);
+  resizeConfetti();
+
+  var CONFETTI_COLORS = ["#e0a324","#ef6a5a","#2f9e8f","#8956a3","#3a7ca5","#d94f70"];
+  function confettiBurst(big){
+    if (reduceMotion) return;
+    var count = big ? 140 : 70;
+    for (var i = 0; i < count; i++){
+      particles.push({
+        x: window.innerWidth/2 + (Math.random()-0.5)*200,
+        y: window.innerHeight*0.28,
+        vx: (Math.random()-0.5) * (big ? 9 : 6),
+        vy: -(Math.random()*7 + (big?6:3)),
+        g: 0.22,
+        size: Math.random()*7 + 4,
+        rot: Math.random()*Math.PI*2,
+        vr: (Math.random()-0.5)*0.3,
+        color: CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)],
+        life: 0,
+        maxLife: 110 + Math.random()*40
+      });
+    }
+    if (!confettiRunning){ confettiRunning = true; requestAnimationFrame(tickConfetti); }
+  }
+  function tickConfetti(){
+    cctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    var alive = false;
+    for (var i = particles.length-1; i >= 0; i--){
+      var p = particles[i];
+      p.vy += p.g;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life++;
+      if (p.life > p.maxLife || p.y > window.innerHeight+40){
+        particles.splice(i,1);
+        continue;
+      }
+      alive = true;
+      var fade = 1 - Math.max(0, (p.life - p.maxLife*0.7) / (p.maxLife*0.3));
+      cctx.save();
+      cctx.globalAlpha = Math.max(0, Math.min(1, fade));
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rot);
+      cctx.fillStyle = p.color;
+      cctx.fillRect(-p.size/2, -p.size/3, p.size, p.size*0.66);
+      cctx.restore();
+    }
+    if (alive){
+      requestAnimationFrame(tickConfetti);
+    } else {
+      confettiRunning = false;
+      cctx.clearRect(0,0,window.innerWidth,window.innerHeight);
+    }
+  }
+
+  // ===== events =====
+  registerBtn.addEventListener("click", registerList);
+  clearBtn.addEventListener("click", clearAll);
+  spinBtn.addEventListener("click", spin);
+  resetRoundBtn.addEventListener("click", resetRound);
+  rankMinus.addEventListener("click", function(){
+    rankInput.value = Math.max(1, (parseInt(rankInput.value,10)||1) - 1);
+    onRankChange();
+  });
+  rankPlus.addEventListener("click", function(){
+    var max = Math.max(1, state.all.length || 99);
+    rankInput.value = Math.min(max, (parseInt(rankInput.value,10)||1) + 1);
+    onRankChange();
+  });
+  rankInput.addEventListener("change", onRankChange);
+  function onRankChange(){
+    clampRankInput();
+    state.totalRanks = parseInt(rankInput.value,10) || 1;
+    state.remaining = state.all.slice();
+    state.results = {};
+    state.currentRank = state.totalRanks;
+    buildPodium();
+    drawWheel();
+    render();
+  }
+
+  namesEl.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)){
+      e.preventDefault();
+      registerList();
+    }
+  });
+
+  // ===== boot: hot state (viewer-held) or initial sample =====
+  function start(saved){
+    if (saved && saved.all && saved.all.length){
+      namesEl.value = saved.namesText || saved.all.join("\n");
+      state.all = saved.all;
+      state.remaining = saved.remaining || saved.all.slice();
+      state.totalRanks = saved.totalRanks || 3;
+      state.results = saved.results || {};
+      state.currentRank = typeof saved.currentRank === "number" ? saved.currentRank : state.totalRanks;
+      state.rotation = saved.rotation || 0;
+      rankInput.value = state.totalRanks;
+      buildPodium();
+      Object.keys(state.results).forEach(function(r){ fillPodium(parseInt(r,10), state.results[r]); });
+      wheelCanvas.style.transitionDuration = "0s";
+      wheelCanvas.style.transform = "rotate(" + state.rotation + "deg)";
+      requestAnimationFrame(function(){ wheelCanvas.style.transitionDuration = ""; });
+      drawWheel();
+      render();
+    } else {
+      registerList();
+    }
+  }
+
+  try {
+    if (window.claude && window.claude.hot){
+      window.claude.hot.snapshot(function(){
+        return {
+          all: state.all,
+          remaining: state.remaining,
+          totalRanks: state.totalRanks,
+          results: state.results,
+          currentRank: state.currentRank,
+          rotation: state.rotation,
+          namesText: namesEl.value
+        };
+      });
+      if (window.claude.hot.ready){
+        window.claude.hot.ready(start);
+      } else {
+        start(window.claude.hot.data);
+      }
+    } else {
+      start(null);
+    }
+  } catch(err){
+    start(null);
+  }
+})();
+</script>
